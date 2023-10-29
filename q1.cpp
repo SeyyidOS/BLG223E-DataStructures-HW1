@@ -39,6 +39,7 @@ Employee* loadFromCSV(const string &dataFilename, int &numEmployees) {
     numEmployees = 0;
 
     // Find number of employees in the csv file to initialize the array
+    getline(file, line);
     while (getline(file, line)) {
         numEmployees++;
     }
@@ -61,11 +62,14 @@ Employee* loadFromCSV(const string &dataFilename, int &numEmployees) {
         getline(ss, salary, ';');
         getline(ss, department, ';');
 
-        // Fill the employees array
-        employees[index].setId(stoi(id));
-        employees[index].setSalary(stoi(salary));
-        employees[index].setDepartment(stoi(department));
-        index++;
+        if (stoi(id) > 0){
+            // Fill the employees array
+            employees[index].setId(stoi(id));
+            employees[index].setSalary(stoi(salary));
+            employees[index].setDepartment(stoi(department));
+            index++;
+        }
+
     }
 
     file.close();  // Close the file
@@ -106,7 +110,7 @@ void updateEmployee(Employee* employees, int numEmployees, int id, int salary, i
             return;
         }
     }
-    cout << "ERROR: An invalid ID to update." << endl;
+    cout << "ERROR: An invalid ID to update" << endl;
 }
 
 Employee* deleteEmployee(Employee* employees, int &numEmployees, int id) {
@@ -121,7 +125,7 @@ Employee* deleteEmployee(Employee* employees, int &numEmployees, int id) {
     
     // If there is no employee with this ID throw an error message
     if (deleteIndex == -1) {
-        cout << "ERROR: An invalid ID to delete." << endl;
+        cout << "ERROR: An invalid ID to delete" << endl;
         return employees;  // End the function
     }
 
@@ -176,7 +180,7 @@ void processOperations(const string &operationsFilename, Employee* &employees, i
             // cout << "Delete ID: " << id << endl;
 
             if (numEmployees <= 0) {
-                cerr << "ERROR: There is no Employee." << endl;
+                cerr << "ERROR: There is no Employee" << endl;
                 continue;
             }
             employees = deleteEmployee(employees, numEmployees, stoi(id));
@@ -197,31 +201,48 @@ void saveToCSV(const string &outputFilename, Employee* employees, int numEmploye
     file.close(); // Close the file
 }
 
+void printLastFiveEmployees(Employee* employees, int numEmployees){
+    for (int i=numEmployees-5; i<numEmployees; i++){
+        cout << employees[i].getId() << " " << employees[i].getSalary() << " " << employees[i].getDepartment() << endl;
+    }
+}
+
 int main(int argc, char** argv) {
 
     int numEmployees = 0;
+    double exec_time;
+    clock_t start, end;
 
-    clock_t start = clock (); 
+    start = clock (); 
     Employee* employees = loadFromCSV(argv[1], numEmployees);
-    
-    clock_t end = clock (); 
-    double exec_time = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+    end = clock (); 
+    exec_time = ((double) (end - start)) / CLOCKS_PER_SEC;
     cout << "loadFromCSV execution time in sec: " << exec_time << endl;
 
-    clock_t start = clock (); 
+    printLastFiveEmployees(employees, numEmployees);
+
+    start = clock (); 
     processOperations(argv[2], employees, numEmployees);
 
-    clock_t end = clock (); 
-    double exec_time = ((double) (end - start)) / CLOCKS_PER_SEC;
+    end = clock (); 
+    exec_time = ((double) (end - start)) / CLOCKS_PER_SEC;
     cout << "processOperations execution time in sec: " << exec_time << endl;
-    
+
+    printLastFiveEmployees(employees, numEmployees);
+
+    start = clock (); 
     saveToCSV("array_solution.csv", employees, numEmployees);
+
+    end = clock (); 
+    exec_time = ((double) (end - start)) / CLOCKS_PER_SEC;
+    cout << "saveToCSV execution time in sec:  " << exec_time << endl;
+
+    printLastFiveEmployees(employees, numEmployees);
+
 
     delete[] employees; // Free the memory
 
-
-
-    cout << "Execution Time:  " << exec_time << endl;
 
     return 0;
 }
